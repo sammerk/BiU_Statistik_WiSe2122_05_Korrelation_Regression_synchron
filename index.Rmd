@@ -80,7 +80,7 @@ ggplot(mtcars, aes(-mpg, wt)) +
 ### Statistik-Vorlesung Sitzung 05 - Samuel Merk - PH Karlsruhe
 
 ---  
-`r typed::typed(c("Hallo, 💚lich Willkommen und ein gutes neues Jahr 2022!", "Heute lernen wir mit der Regression ein Universaltool kennen.", "Mit Regressionsmodellen kann man die vielen »kleinen« statistischen Verfahren (t-Tests, Wilcoxon-Test, ANOVA, MANOVA, ...) ersetzen", "So muss man z.B. nur ein Set an Voraussetzungen lernen"), typeSpeed = 80, backSpeed = 20, backDelay = 3000, loop = T, contentType = "html")` 
+`r typed::typed(c("Hallo, 💚-lich Willkommen und ein gutes neues Jahr 2022!", "Heute lernen wir mit der Regression ein Universaltool kennen.", "Mit Regressionsmodellen kann man die vielen »kleinen« statistischen Verfahren (t-Tests, Wilcoxon-Test, ANOVA, MANOVA, ...) ersetzen", "So muss man z.B. nur ein Set an Voraussetzungen lernen"), typeSpeed = 80, backSpeed = 20, backDelay = 3000, loop = T, contentType = "html")` 
 
 ---
 ## Mein Plan für heute:
@@ -96,7 +96,6 @@ ggplot(mtcars, aes(-mpg, wt)) +
 * Einführung »Dummykodierung«
 
 ---
-class: center, middle
 # Evaluation
 > Bitte füllen Sie den Evaluationsbogen unter https://bit.ly/merk025 aus.
 
@@ -211,7 +210,7 @@ class: middle center
 
 ---
 ## Übung: Einfache lineare Regression
-.em14[
+
 * Für <i class="fab fa-r-project" style="color:#8cd000"></i>-Nutzer\*innen: [Interaktives Tutorial <i class="fas fa-external-link-square-alt" style="color:#8cd000"></i>]https://apps.samuel-merk.de/tutorial-reg-korr/) 
 * Alle anderen können die Datensätze dort herunterladen und dann lokal in SPSS/JASP/jamovi bearbeiten.
 * `r xfun::embed_file("data/klausur_data_m.sav", "klausur_data_m.sav", text = "Hier")` findet man außerdem den Klausurergebnis-Vorbereitungsaufwand-Datensatz als .sav-Datei.
@@ -506,9 +505,166 @@ class: middle center
 
 ---
 ## Übung: Multiple lineare Regression
-.em14[
+
 * Für <i class="fab fa-r-project" style="color:#8cd000"></i>-Nutzer\*innen: [Interaktives Tutorial](https://apps.samuel-merk.de/tutorial-multiple-regression/) <i class="fas fa-external-link-square-alt" style="color:#8cd000"></i>
 * Alle anderen können die Datensätze dort herunterladen und dann lokal in SPSS/JASP/jamovi bearbeiten.
 
 ---
-## Dummykodierung
+# Einführung Dummykodierung
+.pull-left[
+Ausgangsproblem: Aufnahme von nicht-metrischen Prädiktoren in Regressionsmodelle
+Beispiel 1:
+```{r, echo = F, message = F, warning = F}
+library(tidyverse)
+library(kableExtra)
+data_d_demo1 <- tibble(AV = c(3,2,2,1),
+                       Sex = c("w", "w", "m", "m"),
+                       ISex = c(1,1,0,0))
+data_d_demo1 %>% dplyr::select(-ISex) %>%
+  kable(., align = "c")%>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+]
+
+--
+
+.pull-right[
+Problemlösung durch "0/1-Rekodierung" 
+```{r, echo = F}
+data_d_demo1%>%
+  kable(., align = "c")%>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+]
+
+--
+<br><br>
+> AA <i class="fas fa-brain"></i>: Skizzieren Sie das Regressionsmodell $AV = b_0 + b_1 \cdot ISex$ das sich aus den Daten ergibt und interpretieren Sie $b_0$ und $b_1$ inhaltlich.
+
+---
+## Graphische Lösung Beispiel 1
+.pull-left[
+```{r, echo = F, out.width="100%", message=FALSE, warning=FALSE, fig.width = 6, fig.height=5}
+ggplot(data_d_demo1, aes(ISex, AV)) + 
+  geom_point(color = "#8cd000") + 
+  stat_smooth(method = "lm", se = F, color = "#8cd000") + 
+  ggtitle("Interpretation der Regressionskoeffizienten",  "bei Dummykodierung") + 
+  coord_cartesian(xlim = c(-0,1), ylim = c(-0,4)) + 
+  theme_modern_rc()
+```
+]
+
+--
+.pull-right[
+* $b_0$ entspricht MW der Gruppe ISex == 0
+* $b_1$ entspricht MW Differenz der Gruppen ISex == 1 und ISex == 0
+]
+
+---
+## Einführung Dummykodierung: Lösung Beispiel 1 mit `lm()`
+Die `lm()` bildet glücklicherweise automatisch Dummyvariablen
+```{r}
+lm(AV ~ Sex, data = data_d_demo1)
+```
+
+---
+## Einführung Dummykodierung: Beispiel 2
+Problem: Nominaler Prädiktor mit drei Ausprägungen
+```{r, echo = F}
+data_d_demo2 <- tibble(AV = c(2,3,0,1,1,2),
+                       UV = c("A", "A", "B", "B", "C", "C"),
+                       IUVB = c(0,0,1,1,0,0),
+                       IUVC = c(0,0,0,0,1,1))
+data_d_demo2%>%
+  dplyr::select(-IUVB, -IUVC)%>%
+  kable(., align = "c")%>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+---
+## Einführung Dummykodierung: Beispiel 2
+Problemlösung durch "0/1-Rekodierung in zwei Variablen":
+```{r, echo = F}
+data_d_demo2%>%
+  kable(., align = "c")%>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+---
+##  Graphische Lösung Beispiel 2
+
+.pull-left[
+```{r, echo = F, out.width="90%"}
+library(plotly)
+lm_mod <- lm(AV ~ IUVB + IUVC, data = data_d_demo2)
+
+#Graph Resolution (more important for more complex shapes)
+graph_reso <- 0.05
+
+#Setup Axis
+axis_x <- seq(min(data_d_demo2$IUVB), max(data_d_demo2$IUVB)+0.1, by = graph_reso)
+axis_y <- seq(min(data_d_demo2$IUVC), max(data_d_demo2$IUVC)+1, by = graph_reso)
+
+#Sample points
+Regressionsebene <- expand.grid(IUVB = axis_x, IUVC = axis_y, KEEP.OUT.ATTRS = F)
+Regressionsebene$m_s <- predict.lm(lm_mod, newdata = Regressionsebene)
+Regressionsebene <- reshape2::acast(Regressionsebene, IUVC ~ IUVB, value.var = "m_s") #y ~ x
+
+plot_ly(data_d_demo2
+       )%>%
+  add_trace( x = ~ IUVB, 
+        y = ~ IUVC, 
+        z = ~ AV,
+        type = "scatter3d", 
+        mode = "markers",
+        marker = list(size = 4, color = "#37414b", symbol = 104))%>%
+  add_surface(z = ~Regressionsebene,
+              x = ~axis_x,
+              y = ~axis_y,
+              opacity = 0.8,
+              colorscale = list("#a51e41"),
+              contours = list(x = list(highlight = F),
+                              y = list(highlight = F),
+                              z = list(highlight = F)),
+              showscale=F)%>%
+  #add_trace(x = c(5,10), y = c(5,10), z = c(5,10), type = "scatter3d",  mode="lines",
+  #          line = list(color = "#a51e41", width = 4))%>%
+ layout(scene = list(xaxis = list(spikesides = F, showspikes = T),
+                     yaxis = list(spikesides = F, showspikes = T),
+                     zaxis = list(spikesides = F, showspikes = T)),
+        showlegend = F)
+
+```
+]
+
+.pull-right[
+AA <i class="fas fa-brain"></i>: Interpretieren Sie $b_0$, $b_1$ und $b_2$ des Regressionsmodells $AV = b_0 + b_1 \cdot IUVB + b_2 \cdot IUVC$ anhand der interaktiven Graphik]
+
+---
+## Einführung Dummykodierung: Lösung Beispiel 2 mit `lm()`
+```{r}
+lm(AV ~ UV, data = data_d_demo2)
+```
+
+---
+## Def.: Dummy-Kodierung (Eid, Gollwitzer & Schmitt, 2013)
+Die Dummy-Codierung erfolgt in folgenden Schritten:  
+
+1. Wähle eine der c Kategorien der unabhängigen Variablen als Referenzkategorie aus.  
+2. Weise dieser Referenzkategorie auf allen Codiervariablen den Wert 0 zu.
+3. Weise allen anderen Kategorien der unabhägigen Variablen Werte auf den Codiervariablen derart zu, dass
+     + jede Kategorie nur auf einer einzigen Codiervariablen einen Wert von 1 aufweist (auf allen anderen Codiervariablen den Wert 0)
+     + jede Codiervariable nur für eine einzige Kategorie den Wert 1 aufweist  für alle anderen den Wert 0.
+
+---
+## Interpretation $b_0, \;b_1, \dots$ unter Dummykodierung
+### nach (Eid, Gollwitzer & Schmitt, 2013)
+Wird ein Regressionsmodell mit Dummyvariablen wie folgt spezifiziert
+$$AV_i = b_0 + b_1 \cdot I^{Kat2} + b_2 \cdot I^{Kat3} + \dots + \epsilon_i$$
+können die Regressionsgewichte leicht interpretiert werden:  
+
+* Die Regressionskonstante $b_0$ entspricht dem Mittelwert der abhängigen Variablen in der Referenzkategorie (Kat1)
+* Das Regressionsgewicht $b_1$ der ersten Dummy-Variablen entspricht der Differenz zwischen dem Mittelwert der Kategorie, die auf der Variablen $I^{Kat2}$ eine 1 zugeordnet bekommen hat (hier Kategorie 2), und dem Mittelwert der Referenzgruppe.
+* Das Regressionsgewicht $b_2$ der zweiten Dummy-Variablen entspricht der Differenz zwischen dem Mittelwert der Kategorie, die auf der Variablen $I^{Kat3}$ eine 1 zugeordnet bekommen hat (hier Kategorie 3), und dem Mittelwert der Referenzgruppe.
+* ...
+
